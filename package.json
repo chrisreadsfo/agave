@@ -10,7 +10,8 @@
   "scripts": {
     "local": "tsx agave.ts local",
     "cloud": "tsx agave.ts cloud",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "replay": "tsx replay.ts"
   },
   "dependencies": {
     "@browserbasehq/sdk": "^2.29.0",

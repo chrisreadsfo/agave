@@ -12,5 +12,5 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["agave.ts"]
+  "include": ["agave.ts", "replay.ts"]
 }

@@ -7,6 +7,19 @@ conjunction with our sales team." Anyone can open a free account in two minutes.
 So the integration surface is the UI. This signs in as the customer and clicks exactly
 where they click. One file, top to bottom: `agave.ts`.
 
+![A task in Fieldwire with the posted message in its activity feed](docs/replay.png)
+
+*The end of a real cloud run: the script found the three tasks assigned to this account,
+opened one, and posted a message. `recording/` has the clip.*
+
+## Accounts you need
+
+| | |
+| --- | --- |
+| **Fieldwire** | Free plan — 3 projects, 100 sheets, 5 users, no expiry. Enough for all of this. |
+| **Browserbase** | Free tier. Only needed for `npm run cloud`; `npm run local` uses your own Chromium. |
+| **Claude Pro** | Only to rebuild it with Claude Code. The connector itself calls no model. |
+
 ## Run
 
 ```bash
@@ -45,6 +58,15 @@ slow step obvious:
 `cloud` runs the same thing in ~11s and prints a live-debug URL while it works plus a
 replay URL when it finishes — the replay is the artifact to show someone.
 
+## The recording
+
+`recording/74ec0fde-8fe0-4a41-b4c5-157119ffc560.mp4` is a real cloud run, start to finish.
+Browserbase assembles one MP4 per tab on request:
+
+```bash
+npm run replay -- <sessionId>     # sessionId is on the "recording:" line of a cloud run
+```
+
 ## Things the live site taught us
 
 - Project pages are `app.fieldwire.com/projects/<id>/...`; only the account-level pages
@@ -67,3 +89,19 @@ replay URL when it finishes — the replay is the artifact to show someone.
 
 Local Chromium unless you run `cloud`. Browserbase sessions are created with
 `api_timeout: 300` and `keepAlive: false`, with a local watchdog as a second ceiling.
+
+## What it took
+
+| | |
+| --- | --- |
+| Time to build | 1h 2m wall, 31m of it API time, to a working `cloud` run |
+| Tokens | ~17.7M, 98% served from cache — $15.06 |
+| `agave.ts` | 137 lines |
+| `replay.ts` | 36 lines |
+| Runtime | 7.8s local, 11.2s cloud |
+| Models called at runtime | none |
+
+Most of that hour went to three things the site only tells you by being used: the real
+route shape, that comments are "bubbles" behind a submit button, and that a coach-mark
+lands after the board renders and silently eats clicks. The script got shorter every time
+one of them was understood.
