@@ -4,23 +4,21 @@ import { log } from '../log.js';
 import { retry } from '../log.js';
 import { saveAuthState } from './session.js';
 
-/** Fieldwire's SPA shell is up once the sidebar/project list renders. */
-const SIGNED_IN = [
-  '[data-test*="project"]',
-  'a[href*="#/projects/"]',
-  'text=/All projects/i',
-  '[class*="projectList"]',
-];
-
+/**
+ * Signed in means: on a fieldwire.com page that is not the sign-in form.
+ * Fieldwire lands on /index/projects, so the authenticated routes are the tell
+ * rather than any one piece of chrome.
+ */
 async function isSignedIn(page: Page): Promise<boolean> {
-  if (!page.url().includes('fieldwire.com')) return false;
-  if (/sign_in|sign-in|login/i.test(page.url())) return false;
-  for (const sel of SIGNED_IN) {
-    if (await page.locator(sel).first().isVisible({ timeout: 2_000 }).catch(() => false)) {
-      return true;
-    }
-  }
-  return false;
+  const url = page.url();
+  if (!url.includes('fieldwire.com')) return false;
+  if (/sign_in|sign-in|sign_up|login|password/i.test(url)) return false;
+  if (/\/index\//.test(url) || /\/projects/.test(url)) return true;
+  return !(await page
+    .locator('input[type="password"]')
+    .first()
+    .isVisible({ timeout: 1_500 })
+    .catch(() => false));
 }
 
 /**

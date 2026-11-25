@@ -15,15 +15,15 @@ export interface ResourceRoute {
 
 export const PROJECT_LIST: ResourceRoute = {
   resource: 'projects',
-  route: '#/projects',
+  route: 'index/projects',
   match: /\/projects(\?|$)/,
 };
 
 export const PROJECT_RESOURCES: ResourceRoute[] = [
-  { resource: 'tasks', route: '#/projects/:id/tasks', match: /\/tasks(\?|$)/ },
-  { resource: 'drawings', route: '#/projects/:id/plans', match: /\/(sheets|floorplans|plans)(\?|$)/ },
-  { resource: 'project_users', route: '#/projects/:id/people', match: /\/(project_users|users|members|teams)(\?|$)/ },
-  { resource: 'files', route: '#/projects/:id/files', match: /\/(files|attachments|folders)(\?|$)/ },
+  { resource: 'tasks', route: 'index/projects/:id/tasks', match: /\/tasks(\?|$)/ },
+  { resource: 'drawings', route: 'index/projects/:id/plans', match: /\/(sheets|floorplans|plans)(\?|$)/ },
+  { resource: 'project_users', route: 'index/projects/:id/people', match: /\/(project_users|users|members|teams)(\?|$)/ },
+  { resource: 'files', route: 'index/projects/:id/files', match: /\/(files|attachments|folders)(\?|$)/ },
 ];
 
 /** Navigates a route and waits for the SPA's fetches to settle. */

@@ -13,7 +13,8 @@
     "sync": "tsx src/cli.ts sync",
     "serve": "tsx src/cli.ts serve",
     "fixtures": "tsx src/cli.ts sync --fixtures",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "message": "tsx src/cli.ts message"
   },
   "dependencies": {
     "@browserbasehq/stagehand": "^4.0.0",

@@ -5,6 +5,7 @@ import { signIn } from './browser/auth.js';
 import { NetworkCapture } from './browser/capture.js';
 import { saveAuthState, withSession } from './browser/session.js';
 import { PROJECT_LIST, PROJECT_RESOURCES, projectIds, visit } from './fieldwire/extract.js';
+import { messageMyTask } from './fieldwire/message.js';
 import { latestSyncPath, syncFixtures, syncLive } from './pipeline.js';
 import { serve } from './server.js';
 
@@ -59,6 +60,7 @@ agave — a unified-API connector for Fieldwire, built on the web app
   npm run sync       pull projects/tasks/drawings/people/files -> out/*.json
   npm run fixtures   replay recorded payloads through the normalizers (no network)
   npm run serve      read-only Agave-style REST API over the last sync
+  npm run message -- "Hi Dave"   post a message on a task of yours (a write)
 
   flags: --remote  run on Browserbase instead of local Chromium
          --force   re-run the login form even if a session is cached
@@ -78,6 +80,11 @@ async function main(): Promise<void> {
       );
       for (const w of result.diagnostics.warnings) log.warn(w);
       return;
+    }
+    case 'message': {
+      const text = process.argv.slice(3).filter((a) => !a.startsWith('--')).join(' ');
+      if (!text) throw new Error('usage: npm run message -- "Hi Dave"');
+      return messageMyTask(text);
     }
     case 'serve':
       if (!fs.existsSync(latestSyncPath())) {
