@@ -1,6 +1,6 @@
 # agave — a Fieldwire connector that drives the web app
 
-> Claude wrote this README. The stats at the bottom say what that cost.
+> Claude wrote this README.
 
 Fieldwire (Hilti) is widely used on commercial jobs and **Agave does not integrate with
 it**. Its API is the gated kind: Enterprise only, or added to a Pro/Business plan "in
