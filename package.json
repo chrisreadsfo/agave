@@ -2,7 +2,7 @@
   "name": "agave-fieldwire-connector",
   "version": "0.1.0",
   "private": true,
-  "description": "Headless-browser connector that gives Fieldwire an Agave-style unified API",
+  "description": "Fieldwire connector that drives the web app, since its API is sales-gated",
   "type": "module",
   "engines": {
     "node": ">=20"

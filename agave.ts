@@ -13,7 +13,6 @@
  *   npm run local -- --headless            no window
  */
 import 'dotenv/config';
-import fs from 'node:fs';
 import Browserbase from '@browserbasehq/sdk';
 import { localBrowser } from '@browserbasehq/stagehand';
 import { chromium, type Page } from 'playwright';
@@ -39,9 +38,9 @@ const dismissModal = async (page: Page) => {
 };
 
 /* ── 1. open a browser ──────────────────────────────────────────────────────
-   Stagehand launches and owns the browser; Playwright drives it over CDP. Local
-   by default so remote minutes stay unspent; --remote runs this same code on a
-   Browserbase session, capped server-side by api_timeout. */
+   Stagehand launches and owns the browser; Playwright drives it over CDP. The
+   two modes differ only here: `cloud` swaps the local browser for a Browserbase
+   session, capped server-side by api_timeout and locally by the watchdog. */
 
 let replay: string | null = null;
 let connectUrl: string;
@@ -87,7 +86,6 @@ try {
 
   /* ── 3. click into the project, then onto my tasks ──────────────────────── */
 
-  await dismissModal(page);
   await page
     .locator(PROJECT ? `[data-e2e="${PROJECT}-project-card-name"]` : '[data-e2e$="-project-card-name"]')
     .first()
@@ -128,7 +126,6 @@ try {
     // Fail fast if something is covering the button, rather than retrying for 30s.
     await page.locator('[data-e2e="task-edit-bubble-submit-button"] button').click({ timeout: 10_000 });
     log(`posted "${MESSAGE}" — POST /bubbles -> ${(await posted).status()}`);
-    fs.mkdirSync('out', { recursive: true });
     await page.screenshot({ path: 'out/message.png' });
   }
 } finally {

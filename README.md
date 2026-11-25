@@ -31,7 +31,19 @@ npm run cloud                              # the same run on a Browserbase sessi
 5. Types a message on the first one and clicks submit.
 
 No LLM, no agent. Every step is a fixed Playwright call, so runs are reproducible and cost
-nothing but browser time.
+nothing but browser time. Each step prints when it finished, which is what makes a
+slow step obvious:
+
+```
+[0.0s] local Chromium (headless=false)
+[5.1s] signed in
+[5.6s] opened project 37e433b8-6942-452d-bafc-891ff1a19517
+[6.8s] 3 tasks assigned to me: Install conduit for EF-4 fan | Tape & finish gyp board | ...
+[7.4s] posted "Hi Dave" — POST /bubbles -> 201
+```
+
+`cloud` runs the same thing in ~11s and prints a live-debug URL while it works plus a
+replay URL when it finishes — the replay is the artifact to show someone.
 
 ## Things the live site taught us
 
@@ -41,8 +53,13 @@ nothing but browser time.
   `sidebar-my-tasks-filter`, `task-edit-bubble-submit-button` — so no CSS-class guessing.
 - Fieldwire calls task comments **bubbles**. Enter inserts a newline, so the submit button
   has to be clicked; `POST .../bubbles -> 201` is the proof it landed.
-- A free plan interrupts with an upsell modal whose backdrop silently eats clicks. It has
-  to be closed by its **Close** button; Escape alone doesn't always clear it.
+- A free plan interrupts with coach-marks whose backdrop silently eats clicks — no error,
+  just a click that does nothing. Close them by their **Close** button, and only *after*
+  the board renders: they appear late, so an earlier probe dismisses nothing and every
+  later click then burns its full retry budget against the backdrop.
+- When a click seems to hang, look at the pixels. A headful window, Browserbase's live
+  debugger, or the replay shows a covering modal instantly; the stack trace names the
+  wrong element.
 - The activity panel scrolls itself as images load and fights Playwright's
   scroll-into-view, so smooth scrolling is disabled before typing.
 
