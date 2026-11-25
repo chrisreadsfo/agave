@@ -8,19 +8,15 @@
     "node": ">=20"
   },
   "scripts": {
-    "login": "tsx src/cli.ts login",
-    "discover": "tsx src/cli.ts discover",
-    "sync": "tsx src/cli.ts sync",
-    "serve": "tsx src/cli.ts serve",
-    "fixtures": "tsx src/cli.ts sync --fixtures",
-    "typecheck": "tsc --noEmit",
-    "message": "tsx src/cli.ts message"
+    "local": "tsx agave.ts local",
+    "cloud": "tsx agave.ts cloud",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@browserbasehq/stagehand": "^4.0.0",
+    "@browserbasehq/sdk": "^2.29.0",
+    "@browserbasehq/stagehand": "^4.4.0",
     "dotenv": "^16.4.7",
-    "playwright": "^1.49.1",
-    "zod": "~4.4.3"
+    "playwright": "^1.65.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

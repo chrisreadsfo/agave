@@ -1,98 +1,52 @@
-# agave — a unified-API connector for Fieldwire
+# agave — a Fieldwire connector that drives the web app
 
 Fieldwire (Hilti) is widely used on commercial jobs and **Agave does not integrate with
-it**. Its API is the gated kind: available only on an Enterprise contract, or added to a
-Pro/Business plan "in conjunction with our sales team." Meanwhile anyone can open a free
-account in two minutes.
+it**. Its API is the gated kind: Enterprise only, or added to a Pro/Business plan "in
+conjunction with our sales team." Anyone can open a free account in two minutes.
 
-So the integration surface is the web app. This is a connector that signs in as the
-customer, reads what the customer can already see, and serves it in Agave's shape.
+So the integration surface is the UI. This signs in as the customer and clicks exactly
+where they click. One file, top to bottom: `agave.ts`.
 
-```
-Fieldwire web app  →  Stagehand (browser)  →  Playwright (deterministic)  →  Agave-style JSON
-```
-
-## Why no agent
-
-The flow is fixed every run: sign in, open the project list, open four tabs per project.
-Nothing about that needs a model to decide, and a model in the loop would make it slower,
-costlier, and non-reproducible. Stagehand launches and manages the browser — local
-Chromium or a Browserbase session — and plain Playwright drives it. **No LLM is called
-anywhere in this repo.**
-
-The extraction does not scrape the DOM either. Driving the UI makes Fieldwire's own web
-client call its private JSON API, and `NetworkCapture` reads those responses. Layout
-changes don't break it; only an API change does.
-
-## Resources
-
-Mapped into Agave's conventions — opaque `id`, native `source_id`, `source_create_time` /
-`source_update_time`, and `source_data: { path, data }` carrying the untouched upstream row.
-
-| Unified resource | Fieldwire source |
-| --- | --- |
-| `projects` | projects |
-| `tasks` | tasks (punch items, issues, to-dos) |
-| `drawings` | sheets / plans |
-| `project_users` | project members, with role and company |
-| `files` | files, photos, attachments |
-
-## Run it
+## Run
 
 ```bash
 npm install
-cp .env.example .env      # add FIELDWIRE_EMAIL / FIELDWIRE_PASSWORD
+npx playwright install chromium
+cp .env.example .env     # FIELDWIRE_EMAIL / FIELDWIRE_PASSWORD
 
-npm run fixtures          # normalizers over recorded payloads — no network
-npm run login             # sign in once, cache the session to .auth/
-npm run discover          # map the private endpoints behind each screen
-npm run sync              # pull every resource -> out/*.json
-npm run serve             # read-only Agave-style REST API on :8787
+npm run local                              # headful Chromium here
+npm run local -- --message "Hi Dave"       # ...and post on the first task of mine
+npm run local -- --headless                # no window
+npm run cloud                              # the same run on a Browserbase session
 ```
 
-Local Chromium is the default. Add `--remote` (with Browserbase keys in `.env`) to run the
-same code on a Browserbase session:
+`--project "Sample project - CRE"` picks a project by name; otherwise the first card.
 
-```bash
-npm run sync -- --remote
-```
+## What it does
 
-### Cost controls
+1. Stagehand launches the browser; Playwright drives it over CDP, in the tab already open.
+2. Signs in (Fieldwire gates the password behind a Continue step while it checks for SSO).
+3. Clicks into the project, then the Tasks tab, then the **My tasks** filter.
+4. Reads the task names the customer sees.
+5. Types a message on the first one and clicks submit.
 
-- Local Chromium unless `--remote` is passed explicitly, so keys in `.env` cost nothing.
-- Every session is capped at **5 minutes** — Browserbase's own `api_timeout` plus a local
-  watchdog, and teardown runs in a `finally`.
-- `sync` stops early and records a warning rather than overrunning the budget.
-- The login is cached to `.auth/`, so repeat runs skip the form. Set `BROWSERBASE_CONTEXT_ID`
-  to persist it remotely too.
+No LLM, no agent. Every step is a fixed Playwright call, so runs are reproducible and cost
+nothing but browser time.
 
-## Serving it
+## Things the live site taught us
 
-```
-GET /                      inventory and counts
-GET /tasks                 { data: [...], next_page: null }
-GET /tasks?project_id=...  filtered
-```
+- Project pages are `app.fieldwire.com/projects/<id>/...`; only the account-level pages
+  are under `/index/`.
+- The DOM has stable `data-e2e` hooks — `task-name-ontaskpage`,
+  `sidebar-my-tasks-filter`, `task-edit-bubble-submit-button` — so no CSS-class guessing.
+- Fieldwire calls task comments **bubbles**. Enter inserts a newline, so the submit button
+  has to be clicked; `POST .../bubbles -> 201` is the proof it landed.
+- A free plan interrupts with an upsell modal whose backdrop silently eats clicks. It has
+  to be closed by its **Close** button; Escape alone doesn't always clear it.
+- The activity panel scrolls itself as images load and fights Playwright's
+  scroll-into-view, so smooth scrolling is disabled before typing.
 
-Same envelope and field conventions as Agave's other connectors, so a consumer written
-against their Procore integration needs no new code path.
+## Cost controls
 
-## Layout
-
-```
-src/browser/session.ts   Stagehand launch + Playwright over CDP + the 5-minute budget
-src/browser/auth.ts      sign-in, cached to .auth/
-src/browser/capture.ts   records the SPA's private JSON API traffic
-src/fieldwire/extract.ts one row per resource: which route to visit, which call to read
-src/unified/types.ts     the Agave-style models
-src/unified/normalize.ts Fieldwire payloads -> unified models
-src/pipeline.ts          live sync and fixture replay
-src/server.ts            read-only REST over the last sync
-```
-
-## Status
-
-Normalizers and the fixture path are verified end to end. The live path is written against
-Fieldwire's real routes; field names in `normalize.ts` accept several candidate keys per
-field and `discover` prints the actual payload keys, so the first live run confirms or
-corrects the mapping rather than guessing silently.
+Local Chromium unless you run `cloud`. Browserbase sessions are created with
+`api_timeout: 300` and `keepAlive: false`, with a local watchdog as a second ceiling.
