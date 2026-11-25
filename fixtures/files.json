@@ -1,0 +1,24 @@
+[
+  {
+    "id": "f-9001",
+    "name": "RFI-014 response — fire caulk assemblies.pdf",
+    "folder_name": "RFIs",
+    "content_type": "application/pdf",
+    "size": 284113,
+    "url": "https://files.fieldwire.com/attachments/f-9001.pdf",
+    "user": { "id": "u-1002", "name": "Site Super", "email": "super@harborviewgc.com" },
+    "created_at": "2026-11-10T20:14:00Z",
+    "updated_at": "2026-11-10T20:14:00Z"
+  },
+  {
+    "id": "f-9002",
+    "name": "L3-corridor-penetrations.jpg",
+    "folder_name": "Photos / Level 3",
+    "content_type": "image/jpeg",
+    "size": 1844210,
+    "url": "https://files.fieldwire.com/attachments/f-9002.jpg",
+    "user": { "id": "u-7781", "name": "Dana Whitfield", "email": "dana@ironcreekmech.com" },
+    "created_at": "2026-11-12T15:40:51Z",
+    "updated_at": "2026-11-12T15:40:51Z"
+  }
+]

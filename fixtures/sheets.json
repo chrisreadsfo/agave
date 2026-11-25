@@ -1,0 +1,28 @@
+[
+  {
+    "id": "3d9e77b0-2c18-4a66-bd01-7f4c1a220301",
+    "number": "M-301",
+    "name": "Level 3 HVAC Plan",
+    "revision": "3",
+    "discipline": "Mechanical",
+    "folder_name": "Current Set / Mechanical",
+    "issue_date": "2026-09-28",
+    "page_count": 1,
+    "file_url": "https://files.fieldwire.com/sheets/3d9e77b0.pdf",
+    "created_at": "2026-09-28T13:00:00Z",
+    "updated_at": "2026-10-02T19:31:08Z"
+  },
+  {
+    "id": "4e0f88c1-3d29-4b77-ce12-8a5d2b330302",
+    "number": "A-101",
+    "name": "Level 1 Floor Plan",
+    "revision": "5",
+    "discipline": "Architectural",
+    "folder_name": "Current Set / Architectural",
+    "issue_date": "2026-10-11",
+    "page_count": 1,
+    "file_url": "https://files.fieldwire.com/sheets/4e0f88c1.pdf",
+    "created_at": "2026-10-11T13:00:00Z",
+    "updated_at": "2026-10-11T13:00:00Z"
+  }
+]
