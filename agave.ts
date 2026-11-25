@@ -30,18 +30,12 @@ const BUDGET_S = 300;
 const t0 = Date.now();
 const log = (m: string) => console.log(`[${((Date.now() - t0) / 1000).toFixed(1)}s] ${m}`);
 
-/** A free plan interrupts with an upsell modal whose backdrop swallows clicks. */
+/** Fieldwire interrupts with coach-marks whose backdrop silently eats clicks. */
 const dismissModal = async (page: Page) => {
   const close = page.locator('[data-text="Close"]').first();
-  if (await close.isVisible({ timeout: 2_000 }).catch(() => false)) {
-    await close.click();
-    await close.waitFor({ state: 'hidden' }).catch(() => {});
-    return;
-  }
-  const backdrop = page.locator('.cdk-overlay-backdrop-showing').first();
-  if (!(await backdrop.isVisible({ timeout: 1_000 }).catch(() => false))) return;
-  await page.keyboard.press('Escape');
-  await backdrop.waitFor({ state: 'hidden' }).catch(() => {});
+  if (!(await close.isVisible({ timeout: 1_000 }).catch(() => false))) return;
+  await close.click();
+  await close.waitFor({ state: 'hidden' });
 };
 
 /* ── 1. open a browser ──────────────────────────────────────────────────────
@@ -101,16 +95,17 @@ try {
   await page.waitForURL(/\/projects\/[0-9a-f-]+\//);
   log(`opened project ${page.url().split('/')[4]}`);
 
-  await dismissModal(page);
   await page.locator('[data-e2e="project-sidebar-tasks-tab"]').click();
-  const myTasks = page.locator('[data-e2e="sidebar-my-tasks-filter"]');
-  // The upsell can re-appear mid-click; a dispatched event ignores hit-testing.
-  await myTasks.click({ timeout: 8_000 }).catch(() => myTasks.dispatchEvent('click'));
+  // A dispatched event ignores hit-testing, so a coach-mark backdrop can't eat it.
+  await page.locator('[data-e2e="sidebar-my-tasks-filter"]').dispatchEvent('click');
 
   /* ── 4. read what the customer sees ─────────────────────────────────────── */
 
   const rows = page.locator('[data-e2e="task-name-ontaskpage"]');
   await rows.first().waitFor({ state: 'visible' });
+  // The "Overdue tasks has moved" coach-mark only lands once the board renders,
+  // so this is the first moment there is anything to dismiss.
+  await dismissModal(page);
   const names = (await rows.allInnerTexts()).map((n) => n.trim());
   log(`${names.length} tasks assigned to me: ${names.join(' | ')}`);
 
@@ -119,8 +114,7 @@ try {
      submit button has to be clicked, and the POST is the proof it landed. */
 
   if (MESSAGE) {
-    await dismissModal(page);
-    await rows.first().click({ timeout: 8_000 }).catch(() => rows.first().dispatchEvent('click'));
+    await rows.first().dispatchEvent('click');
 
     // The activity panel scrolls itself as images load; without this it fights
     // Playwright's scroll-into-view on every action.
@@ -131,7 +125,8 @@ try {
     await box.fill(MESSAGE);
 
     const posted = page.waitForResponse((r) => r.request().method() === 'POST' && r.url().includes('/bubbles'));
-    await page.locator('[data-e2e="task-edit-bubble-submit-button"] button').click();
+    // Fail fast if something is covering the button, rather than retrying for 30s.
+    await page.locator('[data-e2e="task-edit-bubble-submit-button"] button').click({ timeout: 10_000 });
     log(`posted "${MESSAGE}" — POST /bubbles -> ${(await posted).status()}`);
     fs.mkdirSync('out', { recursive: true });
     await page.screenshot({ path: 'out/message.png' });
